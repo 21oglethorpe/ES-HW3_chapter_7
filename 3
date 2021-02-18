@@ -1,0 +1,82 @@
+-- library declaration
+library IEEE;
+use IEEE.std_logic_1164.all;
+-- entity
+entity mux2t1 is
+    port (A,B : in std_logic_vector(7 downto 0);
+    SEL         : in std_logic;
+    result          : out std_logic_vector(7 downto 0));
+end mux2t1;
+-- architecture
+architecture mux1 of mux2t1 is
+begin
+with SEL select
+result <= A when '1',
+          B when '0';
+end mux1;
+
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+entity reg is
+    port (inp : in std_logic_vector(7 downto 0);
+    CLK,LD         : in std_logic;
+    result          : out std_logic_vector(7 downto 0));
+end reg;
+-- architecture
+architecture mux1 of reg is
+begin
+    reg: process(CLK)
+    begin
+        if (rising_edge(CLK)) then
+            if (LD = '1') then
+                result <= inp;
+            end if;
+        end if;
+    end process;
+end mux1;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+entity ckt_rtl is --- ENTITY
+port (X,Y : in std_logic_vector(7 downto 0);
+CLOCK,S1,S0 : in std_logic;
+LDA,LDB : in std_logic;
+RB : inout std_logic_vector(7 downto 0));
+end ckt_rtl;
+
+architecture rtl_structural of ckt_rtl is 
+-- intermediate signal declaration ---------------
+signal mux1_result, mux2_result, RA_result : std_logic_vector(7 downto 0);
+
+   component mux2t1
+    port (A,B : in std_logic_vector(7 downto 0);
+      SEL         : in std_logic;
+      result          : out std_logic_vector(7 downto 0));
+      end component;
+   component reg
+   port (inp : in std_logic_vector(7 downto 0);
+       CLK,LD         : in std_logic;
+       result          : out std_logic_vector(7 downto 0));
+       end component;      
+   begin
+   mux1: mux2t1
+   port map (A => X,
+             B => RB,
+             SEL => S1,
+             result => mux1_result);
+   rega: reg
+   port map ( inp =>mux1_result,
+              CLK => CLOCK,
+              LD => LDA,
+              result => RA_result);
+   mux2: mux2t1
+   port map (A => RA_result,
+             B => Y,
+             SEL => S0,
+             result => mux2_result);
+   regb: reg
+   port map ( inp =>mux2_result,
+                 CLK => CLOCK,
+                 LD => LDB,
+                 result => RB);
+end rtl_structural;
