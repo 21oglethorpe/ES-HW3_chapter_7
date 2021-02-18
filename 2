@@ -2,53 +2,109 @@
 library IEEE;
 use IEEE.std_logic_1164.all;
 -- entity
-entity ckt_rtl is
-    port (X,Y,Z : in std_logic_vector(7 downto 0);
-    CLK, DS         : in std_logic;
-    MS          : in std_logic_vector(1 downto 0);
-    RB          : inout std_logic_vector(7 downto 0));
-end ckt_rtl;
+entity mux4t1 is
+    port (A,B, C, D : in std_logic_vector(7 downto 0);
+    SEL         : in std_logic_vector(1 downto 0);
+    result          : out std_logic_vector(7 downto 0));
+end mux4t1;
 -- architecture
-architecture rtl_behavioral of ckt_rtl is
--- intermediate signal declaration ---------------
-signal s_mux_result, RA_result : std_logic_vector(7 downto 0);
-signal decoder_resultA,decoder_resultB : std_logic;
-
+architecture mux1 of mux4t1 is
 begin
-    r_b: process(CLK) -- process
+with SEL select
+result <= A when "11",
+          B when "10",
+          C when "01",
+          D when "00";
+end mux1;
+
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+entity reg is
+    port (inp : in std_logic_vector(7 downto 0);
+    CLK,LD         : in std_logic;
+    result          : out std_logic_vector(7 downto 0));
+end reg;
+-- architecture
+architecture mux1 of reg is
+begin
+    reg: process(CLK)
     begin
         if (falling_edge(CLK)) then
-            if (decoder_resultB = '1') then
-                RB <= RA_result;
+            if (LD = '1') then
+                result <= inp;
             end if;
         end if;
-end process;
+    end process;
+end mux1;
 
-    r_a: process(CLK) -- process
-    begin
-        if (falling_edge(CLK)) then
-            if (decoder_resultA = '1') then
-                RA_result <= s_mux_result;
-            end if;
-        end if;
-end process;
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+entity decoder is
+    port (input        : in std_logic;
+    one, zero          : out std_logic);
+end decoder;
+-- architecture
+architecture mux1 of decoder is
+begin
+    with input select
+    one <= '1' when '1',
+           '0' when others;
+    with input select
+               zero <= '1' when '0',
+                      '0' when others;
+end mux1;
 
-decoder: process(CLK) -- process
-    begin
-    
-        if(DS = '1') then
-            decoder_resultA <='0';
-            decoder_resultB <='1';
-        end if;
-        if(DS = '0') then
-                    decoder_resultA <='1';
-                    decoder_resultB <='0';
-                end if;
-end process;
+library IEEE;
+use IEEE.std_logic_1164.all;
+entity ckt_rtl is --- ENTITY
+port (X,Y,Z : in std_logic_vector(7 downto 0);
+CLOCK, DS : in std_logic;
+MS : in std_logic_vector(1 downto 0);
+RB : inout std_logic_vector(7 downto 0);
+RA : out std_logic_vector(7 downto 0));
+end ckt_rtl;
 
-with MS select
-s_mux_result <= X when "11",
-                Y when "10",
-                Z when "01",
-                RB when "00";
-                end rtl_behavioral;
+architecture rtl_structural of ckt_rtl is 
+-- intermediate signal declaration ---------------
+signal mux1_result, RA_output  : std_logic_vector(7 downto 0);
+signal LDREGA, LDREGB  : std_logic;
+
+   component mux4t1
+    port (A,B, C, D : in std_logic_vector(7 downto 0);
+       SEL         : in std_logic_vector(1 downto 0);
+       result          : out std_logic_vector(7 downto 0));
+       end component;
+   component reg
+   port (inp : in std_logic_vector(7 downto 0);
+       CLK,LD         : in std_logic;
+       result          : out std_logic_vector(7 downto 0));
+       end component;      
+   component decoder
+   port (input        : in std_logic;
+       one, zero          : out std_logic);
+       end component;
+   begin
+   
+   mux1: mux4t1
+   port map (A => X,
+             B => Y,
+             C => Z,
+             D => RB,
+             SEL => MS,
+             result => mux1_result);
+   rega: reg
+   port map ( inp =>mux1_result,
+              CLK => CLOCK,
+              LD => LDREGA,
+              result => RA_output);
+              RA <= RA_output;
+   decode: decoder
+   port map (input => DS,
+             one => LDREGB,
+             zero => LDREGA);
+   regb: reg
+   port map ( inp =>RA_output,
+                 CLK => CLOCK,
+                 LD => LDREGB,
+                 result => RB);
+end rtl_structural;
