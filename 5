@@ -1,0 +1,103 @@
+-- library declaration
+library IEEE;
+use IEEE.std_logic_1164.all;
+-- entity
+entity mux2t1 is
+    port (A,B : in std_logic_vector(7 downto 0);
+    SEL         : in std_logic;
+    result          : out std_logic_vector(7 downto 0));
+end mux2t1;
+-- architecture
+architecture mux1 of mux2t1 is
+begin
+with SEL select
+result <= A when '1',
+          B when '0';
+end mux1;
+
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+entity reg is
+    port (inp : in std_logic_vector(7 downto 0);
+    CLK,LD         : in std_logic;
+    result          : out std_logic_vector(7 downto 0));
+end reg;
+-- architecture
+architecture mux1 of reg is
+begin
+    reg: process(CLK)
+    begin
+        if (falling_edge(CLK)) then
+            if (LD = '1') then
+                result <= inp;
+            end if;
+        end if;
+    end process;
+end mux1;
+
+LIBRARY IEEE;
+USE IEEE.STD_LOGIC_1164.ALL;
+entity decoder is
+    port (input        : in std_logic;
+    one, zero          : out std_logic);
+end decoder;
+-- architecture
+architecture mux1 of decoder is
+begin
+    with input select
+    one <= '1' when '1',
+           '0' when others;
+    with input select
+               zero <= '1' when '0',
+                      '0' when others;
+end mux1;
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+entity ckt_rtl is --- ENTITY
+port (A,B,C : in std_logic_vector(7 downto 0);
+CLOCK,SL1, SL2 : in std_logic;
+RBX, RAX : inout std_logic_vector(7 downto 0));
+end ckt_rtl;
+
+architecture rtl_structural of ckt_rtl is 
+-- intermediate signal declaration ---------------
+signal mux1_result  : std_logic_vector(7 downto 0);
+signal LDREGA, LDREGB: std_logic;
+
+   component mux2t1
+    port (A,B : in std_logic_vector(7 downto 0);
+      SEL         : in std_logic;
+      result          : out std_logic_vector(7 downto 0));
+      end component;
+   component reg
+   port (inp : in std_logic_vector(7 downto 0);
+       CLK,LD         : in std_logic;
+       result          : out std_logic_vector(7 downto 0));
+       end component;      
+   component decoder
+   port (input        : in std_logic;
+       one, zero          : out std_logic);
+       end component;
+   begin
+   
+   mux1: mux2t1
+   port map (A => B,
+             B => C,
+             SEL => SL2,
+             result => mux1_result);
+   rega: reg
+   port map ( inp =>A,
+              CLK => CLOCK,
+              LD => LDREGA,
+              result => RAX);
+   decode: decoder
+   port map (input => SL1,
+             one => LDREGA,
+             zero => LDREGB);
+   regb: reg
+   port map ( inp =>mux1_result,
+                 CLK => CLOCK,
+                 LD => LDREGB,
+                 result => RBX);
+end rtl_structural;
