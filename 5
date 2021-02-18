@@ -57,7 +57,7 @@ use IEEE.std_logic_1164.all;
 entity ckt_rtl is --- ENTITY
 port (A,B,C : in std_logic_vector(7 downto 0);
 CLOCK,SL1, SL2 : in std_logic;
-RBX, RAX : inout std_logic_vector(7 downto 0));
+RBX, RAX : out std_logic_vector(7 downto 0));
 end ckt_rtl;
 
 architecture rtl_structural of ckt_rtl is 
