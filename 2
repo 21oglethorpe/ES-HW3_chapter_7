@@ -17,7 +17,7 @@ signal decoder_resultA,decoder_resultB : std_logic;
 begin
     r_b: process(CLK) -- process
     begin
-        if (rising_edge(CLK)) then
+        if (rising_edge(NOT(CLK))) then
             if (decoder_resultB = '1') then
                 RB <= RA_result;
             end if;
@@ -26,7 +26,7 @@ end process;
 
     r_a: process(CLK) -- process
     begin
-        if (rising_edge(CLK)) then
+        if (rising_edge(NOT(CLK))) then
             if (decoder_resultA = '1') then
                 RA_result <= s_mux_result;
             end if;
